@@ -3,7 +3,7 @@ A golang containerized API example
 ## Table of Contents
 
 - [Documentation](#documentation)
-- [Installation](#installation)
+- [Prerequisites](#prerequisites)
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 
