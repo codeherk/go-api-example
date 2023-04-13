@@ -1,0 +1,39 @@
+version: '3.8'
+services:
+  app:
+    container_name: task-api
+    build: 
+      dockerfile: Dockerfile
+      context: .
+    ports:
+      - "8090:8090"
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      MYSQL_USER: root
+      MYSQL_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_root_password}
+      # https://stackoverflow.com/questions/24319662/from-inside-of-a-docker-container-how-do-i-connect-to-the-localhost-of-the-mach
+      MYSQL_HOST: host.docker.internal
+      MYSQL_PORT: 3308
+      MYSQL_DATABASE: sample
+  db:
+    container_name: mysql
+    image: mysql:latest
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: ${MYSQL_ROOT_PASSWORD:-your_root_password}
+      MYSQL_DATABASE: sample
+      # MYSQL_USER: dbuser
+      # MYSQL_PASSWORD: ${MYSQL_PASSWORD}:dbuser_password
+      # MYSQL_USER_HOST: '%'
+      # MYSQL_AUTH_PLUGIN: caching_sha2_password
+    ports:
+      # mysql -u dbuser -h localhost -P 3306 -p
+      - "3308:3306"
+    volumes:
+      # - ./mysql-data:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: "exit 0"
+      
