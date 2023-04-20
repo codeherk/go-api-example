@@ -12,7 +12,7 @@ import (
 	"github.com/gorilla/mux"
 )
 
-// Database object for handlers to use
+// global Database pointer for handlers to use
 var db *sql.DB
 
 type Task struct {
@@ -28,7 +28,15 @@ type Task struct {
 // }
 
 func getHealth(w http.ResponseWriter, r *http.Request) {
-	w.WriteHeader(http.StatusOK)
+	err := db.Ping()
+
+	if err != nil {
+		log.Printf("Error pinging MySQL database: %s\n", err.Error())
+		w.WriteHeader(http.StatusInternalServerError)
+	} else {
+		log.Println("Successful ping")
+		w.WriteHeader(http.StatusOK)
+	}
 }
 
 func getTasks(w http.ResponseWriter, r *http.Request) {
@@ -58,11 +66,11 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	// 	panic(err.Error())
 	// }
 
-	for _, task := range tasks {
-		// fmt.Printf("Task ID: %d\n", task.ID)
-		fmt.Printf("Description: %s\n", task.Description)
-		fmt.Printf("Created Timestamp: %s\n", task.CreatedTimestamp)
-	}
+	// for _, task := range tasks {
+	// 	// fmt.Printf("Task ID: %d\n", task.ID)
+	// 	fmt.Printf("Description: %s\n", task.Description)
+	// 	fmt.Printf("Created Timestamp: %s\n", task.CreatedTimestamp)
+	// }
 
 	// Marshal tasks into json
 	resp, err := json.Marshal(tasks)
@@ -88,21 +96,15 @@ func main() {
 
 	log.Println("Attempting to open MySQL connection")
 
-	// Establish DB connection. Format: USER:PASSWORD@tcp(HOST:PORT)/DATABASE
-	var err error
-	db, err = sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, database))
+	// Establish DB connection.
+	// Format: USER:PASSWORD@tcp(HOST:PORT)/DATABASE
+	conn, err := sql.Open("mysql", fmt.Sprintf("%s:%s@tcp(%s:%s)/%s", username, password, host, port, database))
 
 	if err != nil {
 		log.Fatalf("Error opening MySQL connection: %s", err.Error())
 	}
 
-	err = db.Ping()
-
-	if err != nil {
-		log.Fatalf("Error pinging MySQL database: %s", err.Error())
-	} else {
-		log.Println("Successful ping")
-	}
+	db = conn
 
 	// TODO: Register new route
 	r.HandleFunc("/health", getHealth).Methods("GET")
