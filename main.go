@@ -32,7 +32,7 @@ func getHealth(w http.ResponseWriter, r *http.Request) {
 }
 
 func getTasks(w http.ResponseWriter, r *http.Request) {
-	log.Println("attempting query to Task table")
+	log.Println("Attempting query to Task table")
 
 	// Query Task Table
 	rows, err := db.Query("SELECT description, created_timestamp FROM Tasks")
@@ -47,7 +47,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 		var task Task
 		err := rows.Scan(&task.Description, &task.CreatedTimestamp)
 		if err != nil {
-			log.Printf("Error converting rows : %s\n", err.Error())
+			log.Printf("Error converting rows: %s\n", err.Error())
 			w.WriteHeader(http.StatusInternalServerError)
 			return
 		}
