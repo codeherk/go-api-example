@@ -63,24 +63,6 @@ func getTasks(c *gin.Context) {
 		tasks = append(tasks, task)
 	}
 
-	// if err := rows.Err(); err != nil {
-	// 	panic(err.Error())
-	// }
-
-	// for _, task := range tasks {
-	// 	// fmt.Printf("Task ID: %d\n", task.ID)
-	// 	fmt.Printf("Description: %s\n", task.Description)
-	// 	fmt.Printf("Created Timestamp: %s\n", task.CreatedTimestamp)
-	// }
-
-	// Marshal tasks into json
-	// resp, err := json.Marshal(tasks)
-
-	// if err != nil {
-	// 	log.Printf("Error marshalling tasks to json: %s\n", err.Error())
-	// 	c.Writer.WriteHeader(http.StatusInternalServerError)
-	// }
-
 	// Return response
 	c.JSON(http.StatusOK, tasks)
 }
@@ -110,7 +92,6 @@ func main() {
 	router.GET("/health", getHealth)
 	router.GET("/tasks", getTasks)
 
-	// log.Println("Now serving on port 8090")
 	err = router.Run(":8090")
 
 	if err != nil {
