@@ -1,5 +1,8 @@
 # Golang API Example
 A golang containerized API example
+
+
+[Golang API Example Google Slide Presentation (work in progress)](https://docs.google.com/presentation/d/1IvqOztsqfHIdfXBLD_MNHtTar69yPiqVp456wNPTj4A/edit?usp=sharing)
 ## Table of Contents
 
 - [Documentation](#documentation)
@@ -7,8 +10,16 @@ A golang containerized API example
 - [Getting Started](#getting-started)
 - [Contributing](#contributing)
 
-## Documentation (TODO)
+## Documentation
+Technologies used:
+- Golang: API via mux 
+- MySQL: Database that holds the Task data
+- Docker: containerize the API and Database for local development
 
+![Architecture](architecture.png)
+![Data Model](data-model.png)
+For local development, we use Docker to containerize the API and MySQL database
+![Containerization for Local Development](local-development.png)
 ## Prerequisites 
 
 - Install Go
@@ -17,19 +28,14 @@ A golang containerized API example
 - Install Docker
     - via Chocolately for Windows
     - via Homebrew for Mac
-- Create AWS CLI user via AWS IAM on AWS console 
 - (Optional) Install [Docker VSCode Extension](https://marketplace.visualstudio.com/items?itemName=ms-azuretools.vscode-docker). Helps with Syntax highlighting and autocompletion. 
-
 
 ## Getting Started
 
 - Clone repo
-- Run
-    ```bash
-        docker build -t task-api .
-        docker run -t -i -p 8090:8090 task-api
-    ```
-
+- Run `make start` at the top level directory to build and run the API and MySQL docker containers
+- Other make targets:
+    - `make stop`: stops and removes the docker containers
 ## Contributing
 
 Some of the plans I have for this repo are documented here in [GitHub Projects](https://github.com/users/codeherk/projects/1).
