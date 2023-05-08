@@ -2,14 +2,13 @@ package main
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
 
+	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/gorilla/mux"
 )
 
 // global Database pointer for handlers to use
@@ -27,26 +26,28 @@ type Task struct {
 // 	Detail  string `json:"detail"`
 // }
 
-func getHealth(w http.ResponseWriter, r *http.Request) {
+func getHealth(c *gin.Context) {
 	err := db.Ping()
 
 	if err != nil {
 		log.Printf("Error pinging MySQL database: %s\n", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-	} else {
-		log.Println("Successful ping")
-		w.WriteHeader(http.StatusOK)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
 	}
+
+	log.Println("Successful ping")
+	c.Writer.WriteHeader(http.StatusOK)
 }
 
-func getTasks(w http.ResponseWriter, r *http.Request) {
+func getTasks(c *gin.Context) {
 	log.Println("Attempting query to Task table")
 
 	// Query Task Table
 	rows, err := db.Query("SELECT description, created_timestamp FROM Tasks")
 	if err != nil {
 		log.Printf("Error querying Task table: %s\n", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
 	}
 	defer rows.Close()
 
@@ -56,7 +57,7 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 		err := rows.Scan(&task.Description, &task.CreatedTimestamp)
 		if err != nil {
 			log.Printf("Error converting rows: %s\n", err.Error())
-			w.WriteHeader(http.StatusInternalServerError)
+			c.Writer.WriteHeader(http.StatusInternalServerError)
 			return
 		}
 		tasks = append(tasks, task)
@@ -73,19 +74,19 @@ func getTasks(w http.ResponseWriter, r *http.Request) {
 	// }
 
 	// Marshal tasks into json
-	resp, err := json.Marshal(tasks)
+	// resp, err := json.Marshal(tasks)
 
-	if err != nil {
-		log.Printf("Error marshalling tasks to json: %s\n", err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+	// if err != nil {
+	// 	log.Printf("Error marshalling tasks to json: %s\n", err.Error())
+	// 	c.Writer.WriteHeader(http.StatusInternalServerError)
+	// }
 
 	// Return response
-	w.Write(resp)
+	c.JSON(http.StatusOK, tasks)
 }
 
 func main() {
-	r := mux.NewRouter()
+	router := gin.Default()
 
 	// Get MYSQL variables
 	username := os.Getenv("MYSQL_USER")
@@ -106,12 +107,11 @@ func main() {
 
 	db = conn
 
-	// TODO: Register new route
-	r.HandleFunc("/health", getHealth).Methods("GET")
-	r.HandleFunc("/tasks", getTasks).Methods("GET")
+	router.GET("/health", getHealth)
+	router.GET("/tasks", getTasks)
 
-	log.Println("Now serving on port 8090")
-	err = http.ListenAndServe(":8090", r)
+	// log.Println("Now serving on port 8090")
+	err = router.Run(":8090")
 
 	if err != nil {
 		log.Fatal(err)
