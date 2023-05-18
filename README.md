@@ -12,7 +12,7 @@ A golang containerized API example
 
 ## Documentation
 Technologies used:
-- Golang: API via mux 
+- Golang: API via gin 
 - MySQL: Database that holds the Task data
 - Docker: containerize the API and Database for local development
 
