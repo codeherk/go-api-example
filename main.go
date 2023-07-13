@@ -15,6 +15,7 @@ import (
 var db *sql.DB
 
 type Task struct {
+	ID               int    `json:"id"`
 	Description      string `json:"description"`
 	CreatedTimestamp string `json:"createdTimestamp"`
 }
@@ -43,7 +44,7 @@ func getTasks(c *gin.Context) {
 	log.Println("Attempting query to Task table")
 
 	// Query Task Table
-	rows, err := db.Query("SELECT description, created_timestamp FROM Tasks")
+	rows, err := db.Query("SELECT id, description, created_timestamp FROM Tasks")
 	if err != nil {
 		log.Printf("Error querying Task table: %s\n", err.Error())
 		c.Writer.WriteHeader(http.StatusInternalServerError)
@@ -54,7 +55,7 @@ func getTasks(c *gin.Context) {
 	var tasks []Task
 	for rows.Next() {
 		var task Task
-		err := rows.Scan(&task.Description, &task.CreatedTimestamp)
+		err := rows.Scan(&task.ID, &task.Description, &task.CreatedTimestamp)
 		if err != nil {
 			log.Printf("Error converting rows: %s\n", err.Error())
 			c.Writer.WriteHeader(http.StatusInternalServerError)
@@ -65,6 +66,30 @@ func getTasks(c *gin.Context) {
 
 	// Return response
 	c.JSON(http.StatusOK, tasks)
+}
+
+func postTasks(c *gin.Context) {
+	log.Println("Attempting post to Task table")
+
+	var task Task
+	if err := c.ShouldBind(&task); err != nil {
+		c.Writer.WriteHeader(400)
+	}
+
+	log.Printf("task %v", task)
+
+	_, err := db.Query(
+		"INSERT INTO Tasks (description) VALUES (?)",
+		task.Description)
+
+	if err != nil {
+		log.Printf("Error inserting task into Tasks table: %s\n", err.Error())
+		c.Writer.WriteHeader(http.StatusInternalServerError)
+		return
+	}
+
+	// Return response
+	c.Writer.WriteHeader(http.StatusOK)
 }
 
 func main() {
@@ -91,6 +116,7 @@ func main() {
 
 	router.GET("/health", getHealth)
 	router.GET("/tasks", getTasks)
+	router.POST("/tasks", postTasks)
 
 	err = router.Run(":8090")
 
